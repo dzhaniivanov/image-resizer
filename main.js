@@ -6,16 +6,31 @@ const isMac = process.platform === "darwin";
 
 // create the main window
 function createMainWindow() {
+  let devtools = null;
   const mainWindow = new BrowserWindow({
     title: "Image Resizer",
     width: isDev ? 1000 : 500,
     height: 600,
   });
-  //open devtools if in dev env
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // //open devtools if in dev env
+  // if (isDev) {
+  //   mainWindow.webContents.openDevTools();
+  // }
+  devtools = new BrowserWindow();
+  mainWindow.webContents.setDevToolsWebContents(devtools.webContents);
+  mainWindow.openDevTools();
   mainWindow.loadFile(path.join(__dirname, "./renderer/index.html"));
+}
+
+//create about window
+function createAboutWindow() {
+  const aboutWindow = new BrowserWindow({
+    title: "About Image Resizer",
+    width: 300,
+    height: 300,
+  });
+
+  aboutWindow.loadFile(path.join(__dirname, "./renderer/about.html"));
 }
 
 //app is ready
@@ -40,13 +55,26 @@ const menu = [
     ? [
         {
           label: app.name,
-          submenu: [{ label: "About" }],
+          submenu: [{ label: "About", click: createAboutWindow }],
         },
       ]
     : []),
   {
     role: "fileMenu",
   },
+  ...(!isMac
+    ? [
+        {
+          label: "Help",
+          submenu: [
+            {
+              label: "About",
+              click: createAboutWindow,
+            },
+          ],
+        },
+      ]
+    : []),
 ];
 
 app.on("window-all-closed", () => {
